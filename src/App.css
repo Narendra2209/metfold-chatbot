@@ -150,3 +150,10 @@ body {
   background: #5739c7;
   transform: scale(1.05);
 }
+
+.msg-time {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-top: 4px;
+  text-align: right;
+}

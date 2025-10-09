@@ -14,6 +14,7 @@ function App() {
       {
         sender: "bot",
         text: "👋 Welcome to Metfold Sheet Metals Chatbot! How can I help you today?",
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       },
     ]);
   }, []);
@@ -26,7 +27,8 @@ function App() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMessage = { sender: "user", text: input };
+    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const userMessage = { sender: "user", text: input, time };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
@@ -44,13 +46,18 @@ function App() {
       const botMessage = {
         sender: "bot",
         text: data.output || "No response received.",
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
       console.error("Fetch error:", err);
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: `⚠️ Error: ${err.message}` },
+        {
+          sender: "bot",
+          text: `⚠️ Error: ${err.message}`,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
       ]);
     } finally {
       setIsLoading(false);
@@ -73,7 +80,8 @@ function App() {
         <div className="chat-messages">
           {messages.map((msg, i) => (
             <div key={i} className={`msg-bubble ${msg.sender}`}>
-              {msg.text}
+              <div className="msg-text">{msg.text}</div>
+              <div className="msg-time">{msg.time}</div>
             </div>
           ))}
           {isLoading && (
