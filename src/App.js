@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
-import logo from "./logo.png"; // make sure your logo is in src/
+import logo from "./logo.png"; // make sure your logo file is inside src/
 
 function App() {
   const [input, setInput] = useState("");
@@ -8,7 +8,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef(null);
 
-  // ✅ Add welcome message when component loads
+  // ✅ Add welcome message
   useEffect(() => {
     setMessages([
       {
@@ -19,11 +19,12 @@ function App() {
     ]);
   }, []);
 
-  // ✅ Auto scroll to bottom when messages update
+  // ✅ Auto-scroll when new messages appear
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
+  // ✅ Handle message send
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -41,8 +42,8 @@ function App() {
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
       const data = await response.json();
+
       const botMessage = {
         sender: "bot",
         text: data.output || "No response received.",
@@ -64,6 +65,61 @@ function App() {
     }
   };
 
+  // ✅ Handle file upload (PDF → webhook)
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      alert("Please upload only PDF files!");
+      return;
+    }
+
+    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    setMessages((prev) => [
+      ...prev,
+      { sender: "user", text: `📎 Uploaded: ${file.name}`, time },
+    ]);
+    setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("filename", file.name);
+
+    try {
+      const response = await fetch(
+        "https://rtaisrini.app.n8n.cloud/webhook/aa8cd6d6-431f-4821-b7c7-3b2cda24cb82",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) throw new Error(`Upload failed: ${response.statusText}`);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text: "✅ File uploaded successfully and webhook triggered!",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text: `⚠️ Upload failed: ${error.message}`,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+      e.target.value = ""; // reset input
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter") handleSend();
   };
@@ -75,7 +131,7 @@ function App() {
         <img src={logo} alt="logo" className="chat-logo" />
       </header>
 
-      {/* Body */}
+      {/* Chat Body */}
       <main className="chat-body">
         <div className="chat-messages">
           {messages.map((msg, i) => (
@@ -84,6 +140,7 @@ function App() {
               <div className="msg-time">{msg.time}</div>
             </div>
           ))}
+
           {isLoading && (
             <div className="msg-bubble bot typing">
               <span className="dot"></span>
@@ -95,8 +152,19 @@ function App() {
         </div>
       </main>
 
-      {/* Input */}
+      {/* Input Area */}
       <footer className="chat-input-bar">
+        <label htmlFor="file-upload" className="file-upload-label" title="Upload PDF">
+          📎
+        </label>
+        <input
+          id="file-upload"
+          type="file"
+          accept="application/pdf"
+          onChange={handleFileUpload}
+          className="chat-file-input"
+        />
+
         <input
           type="text"
           value={input}
@@ -105,6 +173,7 @@ function App() {
           placeholder="Type your message..."
           className="chat-input"
         />
+
         <button onClick={handleSend} className="chat-send-btn">
           ➤
         </button>
