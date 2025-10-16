@@ -24,7 +24,7 @@ body {
 }
 
 .chat-logo {
-  height: 40px;
+  height: 50px;
 }
 
 .chat-body {
@@ -159,4 +159,64 @@ body {
 
 .chat-send-btn:hover {
   background-color: #6244d1;
+}
+
+/* 🔐 Auth popup styles */
+.auth-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+  backdrop-filter: blur(3px);
+}
+
+.auth-popup {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  width: 320px;
+  text-align: center;
+}
+
+.auth-popup h3 {
+  margin-bottom: 15px;
+  color: #1b4965;
+}
+
+.auth-popup input {
+  width: 90%;
+  margin: 6px 0;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.auth-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.auth-submit-btn,
+.auth-cancel-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+}
+
+.auth-submit-btn {
+  background-color: #1b4965;
+}
+
+.auth-cancel-btn {
+  background-color: #999;
 }

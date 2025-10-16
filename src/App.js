@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
-import logo from "./logo.png"; // make sure your logo file is inside src/
+import logo from "./logo.svg"; // make sure your logo file is inside src/
 
 function App() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
+  const [pdfFile, setPdfFile] = useState(null);
+  const [userId, setUserId] = useState("");
+  const [password, setPassword] = useState("");
   const chatEndRef = useRef(null);
 
   // ✅ Add welcome message
@@ -65,25 +69,55 @@ function App() {
     }
   };
 
-  // ✅ Handle file upload (PDF → webhook)
-  const handleFileUpload = async (e) => {
+  // ✅ When user selects a file
+  const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
     if (file.type !== "application/pdf") {
       alert("Please upload only PDF files!");
+      e.target.value = "";
       return;
     }
 
+    setPdfFile(file);
+    setShowAuthPopup(true); // open popup for credentials
+  };
+
+  // ✅ Handle popup form submission
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+
+    if (userId !== "metfold" || password !== "metfold@2025") {
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text: "❌ Authentication failed. Please enter valid credentials.",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+      setShowAuthPopup(false);
+      setUserId("");
+      setPassword("");
+      setPdfFile(null);
+      return;
+    }
+
+    // Auth success
     const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     setMessages((prev) => [
       ...prev,
-      { sender: "user", text: `📎 Uploaded: ${file.name}`, time },
+      { sender: "user", text: `📎 Uploaded: ${pdfFile.name}`, time },
     ]);
+    setShowAuthPopup(false);
+    setUserId("");
+    setPassword("");
     setIsLoading(true);
 
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("filename", file.name);
+    formData.append("file", pdfFile);
+    formData.append("filename", pdfFile.name);
 
     try {
       const response = await fetch(
@@ -116,7 +150,7 @@ function App() {
       ]);
     } finally {
       setIsLoading(false);
-      e.target.value = ""; // reset input
+      setPdfFile(null);
     }
   };
 
@@ -154,9 +188,9 @@ function App() {
 
       {/* Input Area */}
       <footer className="chat-input-bar">
-        <label htmlFor="file-upload" className="file-upload-label" title="Upload PDF">
+        {/* <label htmlFor="file-upload" className="file-upload-label" title="Upload PDF">
           📎
-        </label>
+        </label> */}
         <input
           id="file-upload"
           type="file"
@@ -178,6 +212,46 @@ function App() {
           ➤
         </button>
       </footer>
+
+      {/* 🔐 Authentication Popup */}
+      {showAuthPopup && (
+        <div className="auth-overlay">
+          <div className="auth-popup">
+            <h3>🔒 Authentication Required</h3>
+            <form onSubmit={handleAuthSubmit}>
+              <input
+                type="text"
+                placeholder="User ID"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <div className="auth-buttons">
+                <button type="submit" className="auth-submit-btn">Submit</button>
+                <button
+                  type="button"
+                  className="auth-cancel-btn"
+                  onClick={() => {
+                    setShowAuthPopup(false);
+                    setUserId("");
+                    setPassword("");
+                    setPdfFile(null);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
