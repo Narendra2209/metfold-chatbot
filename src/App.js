@@ -12,7 +12,7 @@ function App() {
   const [password, setPassword] = useState("");
   const chatEndRef = useRef(null);
 
-  // ✅ Add welcome message
+  // ✅ Welcome message
   useEffect(() => {
     setMessages([
       {
@@ -23,10 +23,19 @@ function App() {
     ]);
   }, []);
 
-  // ✅ Auto-scroll when new messages appear
+  // ✅ Auto scroll to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
+
+  // ✅ Format text into numbered points
+  const formatAsPoints = (text) => {
+    const points = text
+      .split(/\d+\.\s+/) // Split when “1.”, “2.”, etc.
+      .filter((p) => p.trim() !== "")
+      .map((p, i) => `${i + 1}. ${p.trim()}`);
+    return points.join("<br>");
+  };
 
   // ✅ Handle message send
   const handleSend = async () => {
@@ -46,13 +55,20 @@ function App() {
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+      // ✅ Wait for full JSON response
       const data = await response.json();
+
+      // ✅ Format points neatly
+      const formattedText = data.output ? formatAsPoints(data.output) : "No response received.";
 
       const botMessage = {
         sender: "bot",
-        text: data.output || "No response received.",
+        text: formattedText,
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
+
+      // ✅ Display after receiving complete response
       setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -69,7 +85,7 @@ function App() {
     }
   };
 
-  // ✅ When user selects a file
+  // ✅ File Upload Handler
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -84,7 +100,7 @@ function App() {
     setShowAuthPopup(true); // open popup for credentials
   };
 
-  // ✅ Handle popup form submission
+  // ✅ Handle Authentication
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
 
@@ -104,7 +120,7 @@ function App() {
       return;
     }
 
-    // Auth success
+    // ✅ Auth success
     const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     setMessages((prev) => [
       ...prev,
@@ -130,11 +146,18 @@ function App() {
 
       if (!response.ok) throw new Error(`Upload failed: ${response.statusText}`);
 
+      const result = await response.json();
+
+      // ✅ Wait for n8n full response and display it formatted
+      const formattedText = result.output
+        ? formatAsPoints(result.output)
+        : "✅ File uploaded successfully and webhook triggered!";
+
       setMessages((prev) => [
         ...prev,
         {
           sender: "bot",
-          text: "✅ File uploaded successfully and webhook triggered!",
+          text: formattedText,
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
@@ -170,7 +193,10 @@ function App() {
         <div className="chat-messages">
           {messages.map((msg, i) => (
             <div key={i} className={`msg-bubble ${msg.sender}`}>
-              <div className="msg-text">{msg.text}</div>
+              <div
+                className="msg-text"
+                dangerouslySetInnerHTML={{ __html: msg.text }}
+              />
               <div className="msg-time">{msg.time}</div>
             </div>
           ))}
@@ -188,9 +214,6 @@ function App() {
 
       {/* Input Area */}
       <footer className="chat-input-bar">
-        {/* <label htmlFor="file-upload" className="file-upload-label" title="Upload PDF">
-          📎
-        </label> */}
         <input
           id="file-upload"
           type="file"
