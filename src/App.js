@@ -18,7 +18,10 @@ function App() {
       {
         sender: "bot",
         text: "👋 Welcome to Metfold Sheet Metals Chatbot! How can I help you today?",
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       },
     ]);
   }, []);
@@ -28,20 +31,35 @@ function App() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // ✅ Format text into numbered points
+  // ✅ Format text into points and handle line breaks
   const formatAsPoints = (text) => {
-    const points = text
-      .split(/\d+\.\s+/) // Split when “1.”, “2.”, etc.
-      .filter((p) => p.trim() !== "")
-      .map((p, i) => `${i + 1}. ${p.trim()}`);
-    return points.join("<br>");
+    if (!text) return "";
+
+    // Convert newlines (\n) into HTML <br> tags
+    let formatted = text.replace(/\n/g, "<br>");
+
+    // Split by numbering like "1. ", "2. ", etc.
+    const points = formatted
+      .split(/\d+\.\s+/)
+      .filter((p) => p.trim() !== "");
+
+    // If there’s only one point, return it as-is (with line breaks)
+    if (points.length === 1) {
+      return points[0].trim();
+    }
+
+    // If multiple points, number them and keep line breaks
+    return points.map((p, i) => `${i + 1}. ${p.trim()}`).join("<br>");
   };
 
   // ✅ Handle message send
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const time = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     const userMessage = { sender: "user", text: input, time };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
@@ -54,21 +72,25 @@ function App() {
         body: JSON.stringify({ message: input }),
       });
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
 
-      // ✅ Wait for full JSON response
       const data = await response.json();
 
-      // ✅ Format points neatly
-      const formattedText = data.output ? formatAsPoints(data.output) : "No response received.";
+      // ✅ Format with line breaks and numbering
+      const formattedText = data.output
+        ? formatAsPoints(data.output)
+        : "No response received.";
 
       const botMessage = {
         sender: "bot",
         text: formattedText,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
 
-      // ✅ Display after receiving complete response
       setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -77,7 +99,10 @@ function App() {
         {
           sender: "bot",
           text: `⚠️ Error: ${err.message}`,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
         },
       ]);
     } finally {
@@ -97,7 +122,7 @@ function App() {
     }
 
     setPdfFile(file);
-    setShowAuthPopup(true); // open popup for credentials
+    setShowAuthPopup(true);
   };
 
   // ✅ Handle Authentication
@@ -110,7 +135,10 @@ function App() {
         {
           sender: "bot",
           text: "❌ Authentication failed. Please enter valid credentials.",
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
         },
       ]);
       setShowAuthPopup(false);
@@ -120,8 +148,10 @@ function App() {
       return;
     }
 
-    // ✅ Auth success
-    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const time = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     setMessages((prev) => [
       ...prev,
       { sender: "user", text: `📎 Uploaded: ${pdfFile.name}`, time },
@@ -144,11 +174,11 @@ function App() {
         }
       );
 
-      if (!response.ok) throw new Error(`Upload failed: ${response.statusText}`);
+      if (!response.ok)
+        throw new Error(`Upload failed: ${response.statusText}`);
 
       const result = await response.json();
 
-      // ✅ Wait for n8n full response and display it formatted
       const formattedText = result.output
         ? formatAsPoints(result.output)
         : "✅ File uploaded successfully and webhook triggered!";
@@ -158,7 +188,10 @@ function App() {
         {
           sender: "bot",
           text: formattedText,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
         },
       ]);
     } catch (error) {
@@ -168,7 +201,10 @@ function App() {
         {
           sender: "bot",
           text: `⚠️ Upload failed: ${error.message}`,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
         },
       ]);
     } finally {
@@ -257,7 +293,9 @@ function App() {
                 required
               />
               <div className="auth-buttons">
-                <button type="submit" className="auth-submit-btn">Submit</button>
+                <button type="submit" className="auth-submit-btn">
+                  Submit
+                </button>
                 <button
                   type="button"
                   className="auth-cancel-btn"
