@@ -69,7 +69,10 @@ function App() {
       const response = await fetch(process.env.REACT_APP_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({
+          message: input,
+          history: messages,
+        }),
       });
 
       if (!response.ok)
