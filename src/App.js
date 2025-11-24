@@ -169,13 +169,18 @@ function App() {
     formData.append("filename", pdfFile.name);
 
     try {
-      const response = await fetch(
-        "https://rtaisrini.app.n8n.cloud/webhook/248e923d-dadb-4c7d-9fae-95eef9d4430b/chat",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const uploadUrl =
+        process.env.REACT_APP_UPLOAD_WEBHOOK_URL || process.env.REACT_APP_WEBHOOK_URL;
+      if (!uploadUrl) {
+        throw new Error(
+          "Upload webhook URL not configured. Set REACT_APP_UPLOAD_WEBHOOK_URL in your .env"
+        );
+      }
+
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok)
         throw new Error(`Upload failed: ${response.statusText}`);
