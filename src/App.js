@@ -280,7 +280,6 @@ function App() {
         </button>
       </footer>
 
-      {/* 🔐 Authentication Popup */}
       {showAuthPopup && (
         <div className="auth-overlay">
           <div className="auth-popup">
