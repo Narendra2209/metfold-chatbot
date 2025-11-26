@@ -283,7 +283,7 @@ function App() {
       {showAuthPopup && (
         <div className="auth-overlay">
           <div className="auth-popup">
-            <h3>🔒 Authentication Required</h3>
+            <h3> Authentication Required</h3>
             <form onSubmit={handleAuthSubmit}>
               <input
                 type="text"
