@@ -208,7 +208,7 @@ function App() {
         ...prev,
         {
           sender: "bot",
-          text: `⚠️ Upload failed: ${error.message}`,
+          text: ` Upload failed: ${error.message}`,
           time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
