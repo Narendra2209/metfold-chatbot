@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 import "./App.css";
 import logo from "./logo.svg"; // make sure your logo file is inside src/
 
@@ -66,19 +67,12 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(process.env.REACT_APP_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: input,
-          history: messages,
-        }),
+      const response = await axios.post(process.env.REACT_APP_WEBHOOK_URL, {
+        message: input,
+        history: messages,
       });
 
-      if (!response.ok)
-        throw new Error(`HTTP error! status: ${response.status}`);
-
-      const data = await response.json();
+      const data = response.data;
 
       // ✅ Format with line breaks and numbering
       const formattedText = data.output
@@ -177,15 +171,9 @@ function App() {
         );
       }
 
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await axios.post(uploadUrl, formData);
 
-      if (!response.ok)
-        throw new Error(`Upload failed: ${response.statusText}`);
-
-      const result = await response.json();
+      const result = response.data;
 
       const formattedText = result.output
         ? formatAsPoints(result.output)
